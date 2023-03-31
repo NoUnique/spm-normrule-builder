@@ -48,11 +48,11 @@ def _parse_blocks(text):
 
 
 def _parse_datetime(text):
-    pattern = re.compile(r"# Date:\s+(\d{4}-\d{2}-\d{2}),\s+(\d{2}:\d{2}:\d{2})\s+GMT")
+    pattern = re.compile(r"# Date:\s+(\d{4}-\d{2}-\d{2},\s+\d{2}:\d{2}:\d{2}\s+GMT)")
     match = pattern.search(text)
     if match:
-        date, time = match.groups()
-    return f"{date} {time}"
+        (datetime,) = match.groups()
+    return datetime
 
 
 with urllib.request.urlopen(_UNICODE_BLOCKINFO_URL) as response:
@@ -155,20 +155,20 @@ def main():
     r_text = st.text_input("Red", st.session_state.r_text)
     b_text = st.text_input("Blue", st.session_state.b_text)
     g_text = st.text_input("Green", st.session_state.g_text)
-    st.text("Highlight blocks with a colored border if its name includes the specified words.")
     _HIGHLIGHTS["red"] = lambda block_name: r_text.strip().lower() in block_name.lower()
     _HIGHLIGHTS["blue"] = lambda block_name: b_text.strip().lower() in block_name.lower()
     _HIGHLIGHTS["green"] = lambda block_name: g_text.strip().lower() in block_name.lower()
 
+    st.text("Highlight blocks with a colored border if its name includes the specified words.")
     col1, col2 = st.columns([1, 2])
     with col1:
-        st.checkbox("Show highlighted only", value=False, key="hide_blocks")
+        st.checkbox("Show highlighted only", value=True, key="hide_blocks")
     with col2:
         st.download_button("**Download Custom Rule**", "", file_name="custom_norm.tsv", use_container_width=True)
     for color in _HIGHLIGHTS.keys():
         st.markdown(custom_style(color), unsafe_allow_html=True)
 
-    st.text(f"Unicode Blocks information was last updated on {_UNICODE_BLOCKINFO_RELEASE_DATE} GMT.")
+    st.text(f"Unicode Blocks information was last updated on {_UNICODE_BLOCKINFO_RELEASE_DATE}.")
     for i, block_name in enumerate(block_list):
         make_block(block_name, i)
 
