@@ -7,6 +7,9 @@ import streamlit as st
 
 # from . import builder
 
+
+_UNICODE_BLOCKINFO_URL = "http://unicode.org/Public/UNIDATA/Blocks.txt"
+
 _UNICODE_BLOCKS = {
     "Basic Latin": (0x0000, 0x007F),
     "Latin-1 Supplement": (0x0080, 0x00FF),
@@ -34,15 +37,14 @@ _HIGHLIGHTS = {
 
 
 def _parse_blocks(text):
-    global _UNICODE_BLOCKS
-    _UNICODE_BLOCKS = {}
-
+    unicode_blocks = {}
     pattern = re.compile(r"([0-9A-F]+)\.\.([0-9A-F]+);\ (\S.*\S)")
     for line in text.splitlines():
         m = pattern.match(line)
         if m:
             start, end, name = m.groups()
-            _UNICODE_BLOCKS[name] = (int(start, 16), int(end, 16))
+            unicode_blocks[name] = (int(start, 16), int(end, 16))
+    return unicode_blocks
 
 
 def _parse_datetime(text):
@@ -50,15 +52,14 @@ def _parse_datetime(text):
     match = pattern.search(text)
     if match:
         date, time = match.groups()
-    return date, time
+    return f"{date} {time}"
 
 
-url = "http://unicode.org/Public/UNIDATA/Blocks.txt"
-with urllib.request.urlopen(url) as response:
+with urllib.request.urlopen(_UNICODE_BLOCKINFO_URL) as response:
     file_content = response.read().decode("utf-8")
 
-_parse_blocks(file_content)
-_parse_datetime(file_content)
+_UNICODE_BLOCKS = _parse_blocks(file_content)
+_UNICODE_BLOCKINFO_RELEASE_DATE = _parse_datetime(file_content)
 
 
 @st.cache_data
@@ -167,6 +168,7 @@ def main():
     for color in _HIGHLIGHTS.keys():
         st.markdown(custom_style(color), unsafe_allow_html=True)
 
+    st.text(f"Unicode Blocks information was last updated on {_UNICODE_BLOCKINFO_RELEASE_DATE} GMT.")
     for i, block_name in enumerate(block_list):
         make_block(block_name, i)
 
