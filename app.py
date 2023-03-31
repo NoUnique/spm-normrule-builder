@@ -108,11 +108,11 @@ def make_block(block_name, index):
         _, col1, col2, _ = st.columns([1, 8, 20, 1])
         with col1:
             _normalizers = list(_NORMALIZERS.keys())
-            st.session_state.normalizers[index] = st.selectbox(
+            st.selectbox(
                 "Normalization Type",
                 _normalizers,
-                key=f"expander-{index}-normtype",
-                index=_normalizers.index(st.session_state.normalizers[index]),
+                key=f"normalizer_{index}",
+                index=_normalizers.index(st.session_state[f"normalizer_{index}"]),
                 label_visibility="collapsed",
             )
         with col2:
@@ -141,7 +141,8 @@ def main():
     block_list = list(_UNICODE_BLOCKS.keys())
     _default_normalizer = list(_NORMALIZERS.keys())[0]
     st.session_state.global_normalizer = _default_normalizer
-    st.session_state.normalizers = [_default_normalizer] * len(block_list)
+    for i in range(len(block_list)):
+        st.session_state[f"normalizer_{i}"] = _default_normalizer
     st.session_state.r_text = "hangul"
     st.session_state.b_text = "enclosed"
     st.session_state.g_text = "cjk"
@@ -150,7 +151,7 @@ def main():
     if st.session_state.global_normalizer != global_normalizer:
         st.session_state.global_normalizer = global_normalizer
         for i in range(len(block_list)):
-            st.session_state.normalizers[i] = global_normalizer
+            st.session_state[f"normalizer_{i}"] = global_normalizer
 
     r_text = st.text_input("Red", st.session_state.r_text)
     b_text = st.text_input("Blue", st.session_state.b_text)
